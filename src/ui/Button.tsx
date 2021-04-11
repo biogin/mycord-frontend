@@ -1,12 +1,13 @@
 import React, { ReactNode } from 'react';
 
 interface ButtonProps {
-  type: any;
+  type?: any;
   filled?: boolean;
   text?: string;
   className?: string;
   children?: ReactNode;
   disabled?: boolean;
+  fluid?: boolean;
 
   click?(e: React.SyntheticEvent): void;
 }
@@ -18,7 +19,8 @@ const Button = ({
                   click,
                   className,
                   children,
-                  disabled = false
+                  disabled = false,
+                  fluid = true
                 }: ButtonProps) => {
   return (
       <button
@@ -26,7 +28,7 @@ const Button = ({
           onClick={click ? click : () => {
           }}
           disabled={disabled}
-          className={`btn ${disabled && 'pointer-events-none'} ${!disabled && !filled && `hover:bg-secondary hover:text-primary`} rounded w-full border-2 disabled:opacity-50 ${filled ? `btn-secondary ${!disabled && `hover:text-blue-600 hover:bg-primary`}` : ``} ${className ? className : ''}`}>
+          className={`btn ${disabled && 'pointer-events-none'} z-10 ${!disabled && !filled && `hover:bg-secondary hover:text-primary`} ${fluid && `w-full`} rounded border-2 border-secondary disabled:opacity-50 ${filled ? `btn-secondary ${!disabled && `hover:text-secondary hover:bg-primary`}` : ``} ${className ? className : ''}`}>
         {text || children}
       </button>
   );

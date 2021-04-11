@@ -12,6 +12,7 @@ const Login = () => {
   const [loginError, setLoginError] = useState((): any => {
     let err = localStorage.getItem('_autherror');
 
+
     if (err) {
       setTimeout(() => {
         localStorage.removeItem('_autherror');
@@ -76,7 +77,7 @@ const Login = () => {
                     minLength: 10,
                     maxLength: 200
                   }}
-                  render={({ onChange, value }, { invalid }) => <Input type='email' value={value} rounded name='email'
+                  render={({ fieldState: { invalid }, field: { onChange, value } }) => <Input type='email' value={value} rounded name='email'
                                                                        className='p-2'
                                                                        errored={invalid} required
                                                                        errorMessage='Invalid email address'
@@ -94,7 +95,7 @@ const Login = () => {
                   }}
                   control={control}
                   defaultValue={''}
-                  render={({ onChange, value }, { invalid }) => <Input type='password'
+                  render={({ field: { onChange, value }, fieldState: { invalid } }) => <Input type='password'
                                                                        rounded
                                                                        className='p-2'
                                                                        value={value}

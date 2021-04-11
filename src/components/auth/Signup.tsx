@@ -1,16 +1,14 @@
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import ReactDatePicker from 'react-datepicker';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
+import { useMutation, gql } from "@apollo/client";
 
 import 'react-datepicker/dist/react-datepicker.css';
 
 import Wizard, { useCurrentStep, useWizardActions } from '../../ui/wizard/Wizard';
 import Input from '../../ui/Input';
 import Button from '../../ui/Button';
-import { useMutation } from "@apollo/client";
-import { gql } from "@apollo/client/core";
-import { useHistory } from "react-router-dom";
 
 const GeneralInfo = () => {
   const {
@@ -23,9 +21,9 @@ const GeneralInfo = () => {
 
   const { setCurrentStepData, goToNext } = useWizardActions();
 
-  const { control, errors, watch } = useForm();
+  const { control, watch, formState: { errors } } = useForm();
 
-  const { name, signupEmail, date } = watch(['name', 'signupEmail', 'date'], {
+  const [name, signupEmail, date] = watch(['name', 'signupEmail', 'date'], {
     name: stepName,
     signupEmail: stepEmail,
     date: stepDate
@@ -46,7 +44,7 @@ const GeneralInfo = () => {
         <form className='mt-8 self-start'>
           <div className='flex flex-col rounded-md shadow-sm space-y-3 mt-4'>
             <div>
-              <label htmlFor='name' className='sr-only'>Your name</label>
+              <label htmlFor='name' className='sr-only'>Your username</label>
               <Controller
                   name='name'
                   control={control}
@@ -55,10 +53,10 @@ const GeneralInfo = () => {
                     minLength: 10,
                     maxLength: 200
                   }}
-                  render={({ onChange, value }) => <Input type='text' value={value} rounded name='name'
+                  render={({ field: { value, onChange } }) => <Input type='text' value={value} rounded name='name'
                                                           className='p-3'
                                                           errored={errors.name} required
-                                                          placeholder='Name'
+                                                          placeholder='Username'
                                                           onChange={onChange}/>
                   }
               />
@@ -73,7 +71,7 @@ const GeneralInfo = () => {
                   }}
                   control={control}
                   defaultValue={stepEmail || ''}
-                  render={({ onChange, value }) => <Input type='email'
+                  render={({ field: { onChange, value } }) => <Input type='email'
                                                           rounded
                                                           value={value}
                                                           className='p-3'
@@ -97,7 +95,7 @@ const GeneralInfo = () => {
                   control={control}
                   name='date'
                   defaultValue={stepDate || ''}
-                  render={({ onChange, onBlur, value }) => (
+                  render={({ field: { onChange, onBlur, value } }) => (
                       <ReactDatePicker
                           minDate={new Date('1920')}
                           maxDate={new Date()}
@@ -130,7 +128,7 @@ const Finish = () => {
 
   const { control, watch, handleSubmit } = useForm();
 
-  const { password, repeatPassword } = watch(['password', 'repeatPassword'], {
+  const [password, repeatPassword] = watch(['password', 'repeatPassword'], {
         password: stepPassword || '',
         repeatPassword: stepRepeatPassword || ''
       }
@@ -168,7 +166,7 @@ const Finish = () => {
                     required: true,
                     // pattern: /^(?=.*[A-Z].*[A-Z])(?=.*[!@#$&*])(?=.*[0-9].*[0-9])(?=.*[a-z].*[a-z].*[a-z]).{6, }$/
                   }}
-                  render={({ onChange, value }, { invalid }) => <Input type='password'
+                  render={({ field: { onChange, value }, fieldState: { invalid } }) => <Input type='password'
                                                                        value={value}
                                                                        rounded
                                                                        name='password'
@@ -193,7 +191,7 @@ const Finish = () => {
                     required: true,
                     validate: val => val === password
                   }}
-                  render={({ onChange, value }, { invalid }) => <Input type='password'
+                  render={({ field: { onChange, value }, fieldState: { invalid } }) => <Input type='password'
                                                                        value={value}
                                                                        rounded
                                                                        name='repeatPassword'
@@ -227,9 +225,9 @@ const Finish = () => {
 const Signup = () => {
     const [signup, { error }] = useMutation(
         gql`
-            mutation Signup($name: String, $password: String, $email: String, $birthday: String){
-                signup(name: $name, password: $password, email: $email, birthday: $birthday){
-                    name
+            mutation Signup($username: String, $password: String, $email: String, $birthday: String){
+                signup(username: $username, password: $password, email: $email, birthday: $birthday){
+                    username
                 }
             }
         `);
@@ -242,15 +240,16 @@ const Signup = () => {
           {error.message === 'duplicate_email' ? 'User with such email already exists' : 'An error occurred'}
         </h1>}
         <Wizard onFinish={async ({ signupEmail, name, password, date }) => {
-          console.log(signupEmail, name, password, date);
           try {
-            await signup({ variables: { email: signupEmail, name, password, birthday: date.toString() } });
+            await signup({ variables: { email: signupEmail, username: name, password, birthday: date.toString() } });
           } catch (e) {
-            console.log('ERROR BLAYT', JSON.stringify(e, null, 4));
+            console.error('ERROR', JSON.stringify(e, null, 4));
             return;
           }
 
-          history.push('/app');
+          history.push('/');
+
+          window.location.reload();
         }}>
           <GeneralInfo/>
           <Finish/>

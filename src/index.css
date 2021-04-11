@@ -7,13 +7,23 @@
   --color-button-text: #f3f3f3;
 
   --color-blue-100: #8ECAE6;
-  --color-blue-600: #2b2d42;
+  --color-blue-200: #81c2e0;
+  --color-blue-300: #66b8dd;
+  --color-blue-400: #4db0de;
+  --color-blue-500: #2aa5de;
+  --color-blue-bold: #2b2d42;
 
   --color-red-100: #ffcccf;
-  --color-red-200: #ef5d68;
-  --color-red-300: #ee525e;
-  --color-red-400: #e54652;
-  --color-red-600: #e63946;
+  --color-red-200: #f57a83;
+  --color-red-300: #e5545f;
+  --color-red-400: #d7323f;
+  --color-red-600: #dd2c39;
+
+  --color-grey-100: #fcfcfc;
+  --color-grey-200: #ececec;
+  --color-grey-300: #acacac;
+  --color-grey-400: #8f8f8f;
+  --color-grey-600: #707070;
 
   --color-accent-hover: #f3f3f3;
   --color-accent-disabled: #f3f3f3;
@@ -42,7 +52,7 @@ a {
 }
 
 .btn {
-  @apply bg-primary border text-blue-600 p-2;
+  @apply bg-primary border text-secondary p-2;
 }
 .btn-secondary {
   @apply bg-secondary text-primary p-2;

@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Switch, Route, useLocation, useHistory } from "react-router-dom";
 import Modal from "react-modal";
-
 import './App.css';
 
 import Login from "./auth/Login";
@@ -11,14 +10,12 @@ import { PrivateRoute } from "../shared/PrivateRoute";
 import UnauthorizedHome from "./UnauthorizedHome";
 import Explore from "./Explore";
 import Search from "./Search";
-import Home from "./Home";
+import Home from "./Home/Home";
 import PublicRoute from "../shared/PublicRoute";
-
-function MyCordApp() {
-  return (
-      <h1>Hello application</h1>
-  );
-}
+import Profile from "./Profile/Profile";
+import UserPage from "./UserPage";
+import ProfileEdit from "./Profile/components/ProfileEdit";
+import Conversations from "./Conversations/Conversations";
 
 const customStyles = {
   content: {
@@ -38,18 +35,25 @@ function App() {
 
   const history = useHistory();
 
+  useEffect(() => {
+  }, []);
+
   return (
       <>
         <Switch location={background || location}>
-          <Route path='/explore' exact>
+          <Route path='/discover' exact>
             <Explore/>
           </Route>
           <Route path='/search' exact>
             <Search/>
           </Route>
-          <PublicRoute restricted={true} path='/login' exact component={Login} />
+          <PublicRoute restricted={true} path='/login' exact component={Login}/>
           <PrivateRoute path='/' exact redirect={UnauthorizedHome} component={Home}/>
-          <PrivateRoute path='/app' exact component={MyCordApp}/>
+          <PrivateRoute path='/profile' exact component={Profile}/>
+          <PrivateRoute path='/messages' exact component={Conversations}/>
+          <Route path='/:username' exact>
+            <UserPage/>
+          </Route>
           <Route>
             404
           </Route>
@@ -60,15 +64,26 @@ function App() {
               isOpen={true}
               style={customStyles}
               onRequestClose={() => history.goBack()}
-              contentLabel="Signup modal"
+              contentLabel="Signup"
               appElement={document.getElementById('root')!}
           >
             <Signup/>
           </Modal>
         </Route>
+
+        <Route path='/profile/edit'>
+          <Modal
+              isOpen={true}
+              style={customStyles}
+              onRequestClose={() => history.goBack()}
+              contentLabel="Edit profile"
+              appElement={document.getElementById('root')!}
+          >
+            <ProfileEdit/>
+          </Modal>
+        </Route>
       </>
-  )
-      ;
+  );
 }
 
 export default App;

@@ -1,10 +1,11 @@
 import React from 'react';
+import Layout from "../ui/Layout";
 
 const Explore = () => {
   return (
-      <div>
+      <Layout>
         explore
-      </div>
+      </Layout>
   );
 };
 

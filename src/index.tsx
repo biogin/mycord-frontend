@@ -1,17 +1,42 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
-import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
+import { ApolloClient, InMemoryCache, ApolloProvider, HttpLink, split } from '@apollo/client';
+import { WebSocketLink } from '@apollo/client/link/ws';
+import { getMainDefinition } from '@apollo/client/utilities';
 
 import './index.css';
 import App from './components/App';
 import reportWebVitals from './reportWebVitals';
 import AuthProvider from "./components/auth/AuthProvider";
 
+const httpLink = new HttpLink({
+  uri: `http://${process.env.REACT_APP_API_ENDPOINT}/graphql`
+});
+
+const wsLink = new WebSocketLink({
+  uri: `ws://${process.env.REACT_APP_API_ENDPOINT}/subscriptions`,
+  options: {
+    reconnect: true,
+    lazy: true,
+  }
+});
+
+const splitLink = split(
+    ({ query }) => {
+      const definition = getMainDefinition(query);
+      return (
+          definition.kind === 'OperationDefinition' &&
+          definition.operation === 'subscription'
+      );
+    },
+    wsLink,
+    httpLink,
+);
+
 const client = new ApolloClient({
-  uri: `${process.env.REACT_APP_API_ENDPOINT}/graphql`,
-  cache: new InMemoryCache(),
-  credentials: 'include'
+  link: splitLink,
+  cache: new InMemoryCache()
 });
 
 ReactDOM.render(
