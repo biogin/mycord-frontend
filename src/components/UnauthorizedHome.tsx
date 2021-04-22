@@ -5,7 +5,7 @@ import { useForm, Controller } from "react-hook-form";
 
 import Button from "../ui/Button";
 import Input from "../ui/Input";
-import { BASE_ERROR, INVALID_CREDENTIALS } from "./auth/errorTypes";
+import { ALREADY_LOGGED_IN, BASE_ERROR, INVALID_CREDENTIALS } from "./auth/errorTypes";
 
 const UnauthorizedHome: React.FunctionComponent = (): any => {
   const { handleSubmit, formState: { errors }, control } = useForm();
@@ -13,7 +13,7 @@ const UnauthorizedHome: React.FunctionComponent = (): any => {
   const router = useHistory();
   const location = useLocation();
 
-    const [login, { error }] = useMutation(gql`
+    const [login] = useMutation(gql`
         mutation HomeLogin($email: String, $password: String){
             login(email: $email, password: $password){
                 email
@@ -30,6 +30,10 @@ const UnauthorizedHome: React.FunctionComponent = (): any => {
       switch (e.message) {
         case INVALID_CREDENTIALS:
           localStorage.setItem('_autherror', JSON.stringify({ type: INVALID_CREDENTIALS }));
+
+          break;
+        case ALREADY_LOGGED_IN:
+          window.location.reload();
 
           break;
         default:

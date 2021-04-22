@@ -1,5 +1,5 @@
 import React from 'react';
-import { useHistory, useLocation, Link } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 
 import SidebarTab from "./SidebarTab";
 import { useLoggedIn, useUsername, useUserProfileImage } from "./auth/AuthProvider";
@@ -20,11 +20,11 @@ const accountTabs: Array<Tab> = [
     path: '/'
   },
   {
-    name: 'Messages',
+    name: 'Conversations',
     getIcon() {
       return '/icons/messageIcon.svg';
     },
-    path: '/messages'
+    path: '/conversations'
   },
   {
     name: 'Profile',
@@ -54,8 +54,8 @@ const Sidebar = () => {
   const location = useLocation();
 
   return (
-      <div className='flex flex-col sticky w-1/6'>
-        <ul className='flex flex-col pt-2 w-full max-h-screen mt-4 space-y-2'>
+      <div className='flex flex-col sticky w-28'>
+        <ul className='flex flex-col pt-2 w-full max-h-screen md:mt-4 space-y-2'>
           {(loggedIn ? accountTabs : userTabs).map(({ name, getIcon, path }: any) => <SidebarTab
               image={getIcon(userProfileImage)}
               onClick={() => router.push(name === 'Profile' ? `/${username}` : path)}

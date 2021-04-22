@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import Player from "../../ui/Player";
+import Player from "../../../ui/Player";
 
 interface PostProps {
   audioUrl: string;

@@ -58,7 +58,7 @@ export function useLoggedIn(): boolean {
 }
 
 export function useUserProfileImage(): string | undefined {
-  return useContext(AuthContext).user?.imageUrl;
+  return useContext(AuthContext).user?.imageUrl || '/profilePlaceholder.png';
 }
 
 export function useUsername(): string | undefined {

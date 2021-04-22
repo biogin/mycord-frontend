@@ -36,7 +36,7 @@ const Layout = ({ children, topbar = false, mainContentWidth = ContentWidth.Half
           <Topbar/>
           <div className='flex h-full w-full'>
             <Sidebar/>
-            <div className={`bg-white w-full sm:w-1/2 ${mainContentWidth && `sm:w-${mainContentWidth}`} border-l-2 border-r-2 border-grey-100`}>
+            <div className={`bg-white w-full sm:w-1/2 ${mainContentWidth && `sm:w-${mainContentWidth}`} border-l-2 border-r-2 border-grey-200`}>
               {children}
             </div>
             <div className='flex-1'>

@@ -11,15 +11,15 @@ import reportWebVitals from './reportWebVitals';
 import AuthProvider from "./components/auth/AuthProvider";
 
 const httpLink = new HttpLink({
-  uri: `http://${process.env.REACT_APP_API_ENDPOINT}/graphql`
+  uri: `http://${process.env.REACT_APP_API_ENDPOINT}/graphql`,
+  credentials: 'include'
 });
 
 const wsLink = new WebSocketLink({
   uri: `ws://${process.env.REACT_APP_API_ENDPOINT}/subscriptions`,
   options: {
-    reconnect: true,
-    lazy: true,
-  }
+    reconnect: true
+  },
 });
 
 const splitLink = split(

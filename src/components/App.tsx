@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { Switch, Route, useLocation, useHistory } from "react-router-dom";
 import Modal from "react-modal";
 import './App.css';
@@ -10,12 +10,13 @@ import { PrivateRoute } from "../shared/PrivateRoute";
 import UnauthorizedHome from "./UnauthorizedHome";
 import Explore from "./Explore";
 import Search from "./Search";
-import Home from "./Home/Home";
+import Home from "./home/Home";
 import PublicRoute from "../shared/PublicRoute";
-import Profile from "./Profile/Profile";
-import UserPage from "./UserPage";
-import ProfileEdit from "./Profile/components/ProfileEdit";
-import Conversations from "./Conversations/Conversations";
+import Profile from "./profile/Profile";
+import UserPage from "./home/components/UserPage";
+import ProfileEdit from "./profile/components/ProfileEdit";
+import Conversations from "./conversations/Conversations";
+import ConversationsProvider from "./conversations/ConversationsProvider";
 
 const customStyles = {
   content: {
@@ -50,9 +51,15 @@ function App() {
           <PublicRoute restricted={true} path='/login' exact component={Login}/>
           <PrivateRoute path='/' exact redirect={UnauthorizedHome} component={Home}/>
           <PrivateRoute path='/profile' exact component={Profile}/>
-          <PrivateRoute path='/messages' exact component={Conversations}/>
+          <PrivateRoute path='/conversations' exact>
+            <ConversationsProvider>
+              <Conversations />
+            </ConversationsProvider>
+          </PrivateRoute>
           <Route path='/:username' exact>
-            <UserPage/>
+            <ConversationsProvider>
+              <UserPage/>
+            </ConversationsProvider>
           </Route>
           <Route>
             404

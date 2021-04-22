@@ -54,10 +54,10 @@ const GeneralInfo = () => {
                     maxLength: 200
                   }}
                   render={({ field: { value, onChange } }) => <Input type='text' value={value} rounded name='name'
-                                                          className='p-3'
-                                                          errored={errors.name} required
-                                                          placeholder='Username'
-                                                          onChange={onChange}/>
+                                                                     className='p-3'
+                                                                     errored={errors.name} required
+                                                                     placeholder='Username'
+                                                                     onChange={onChange}/>
                   }
               />
             </div>
@@ -72,15 +72,15 @@ const GeneralInfo = () => {
                   control={control}
                   defaultValue={stepEmail || ''}
                   render={({ field: { onChange, value } }) => <Input type='email'
-                                                          rounded
-                                                          value={value}
-                                                          className='p-3'
-                                                          name='signupEmail'
-                                                          required
-                                                          placeholder='Email'
-                                                          autoComplete='email'
-                                                          errored={errors.signupEmail}
-                                                          onChange={onChange}/>}
+                                                                     rounded
+                                                                     value={value}
+                                                                     className='p-3'
+                                                                     name='signupEmail'
+                                                                     required
+                                                                     placeholder='Email'
+                                                                     autoComplete='email'
+                                                                     errored={errors.signupEmail}
+                                                                     onChange={onChange}/>}
               />
             </div>
           </div>
@@ -167,16 +167,16 @@ const Finish = () => {
                     // pattern: /^(?=.*[A-Z].*[A-Z])(?=.*[!@#$&*])(?=.*[0-9].*[0-9])(?=.*[a-z].*[a-z].*[a-z]).{6, }$/
                   }}
                   render={({ field: { onChange, value }, fieldState: { invalid } }) => <Input type='password'
-                                                                       value={value}
-                                                                       rounded
-                                                                       name='password'
-                                                                       className='p-3'
-                                                                       errored={invalid}
-                                                                       errorMessage='Password is too weak'
-                                                                       required
-                                                                       placeholder='Password'
-                                                                       autoComplete='new-password'
-                                                                       onChange={onChange}/>
+                                                                                              value={value}
+                                                                                              rounded
+                                                                                              name='password'
+                                                                                              className='p-3'
+                                                                                              errored={invalid}
+                                                                                              errorMessage='Password is too weak'
+                                                                                              required
+                                                                                              placeholder='Password'
+                                                                                              autoComplete='new-password'
+                                                                                              onChange={onChange}/>
                   }
               />
             </div>
@@ -192,15 +192,15 @@ const Finish = () => {
                     validate: val => val === password
                   }}
                   render={({ field: { onChange, value }, fieldState: { invalid } }) => <Input type='password'
-                                                                       value={value}
-                                                                       rounded
-                                                                       name='repeatPassword'
-                                                                       className='p-3'
-                                                                       errored={invalid}
-                                                                       errorMessage={`Passwords don't match`}
-                                                                       required
-                                                                       placeholder='Repeat password'
-                                                                       onChange={onChange}/>
+                                                                                              value={value}
+                                                                                              rounded
+                                                                                              name='repeatPassword'
+                                                                                              className='p-3'
+                                                                                              errored={invalid}
+                                                                                              errorMessage={`Passwords don't match`}
+                                                                                              required
+                                                                                              placeholder='Repeat password'
+                                                                                              onChange={onChange}/>
                   }
               />
             </div>
@@ -223,7 +223,7 @@ const Finish = () => {
 }
 
 const Signup = () => {
-    const [signup, { error }] = useMutation(
+    const [signup, { error, called }] = useMutation(
         gql`
             mutation Signup($username: String, $password: String, $email: String, $birthday: String){
                 signup(username: $username, password: $password, email: $email, birthday: $birthday){
@@ -232,24 +232,31 @@ const Signup = () => {
             }
         `);
 
+
   const history = useHistory();
 
   return (
       <>
         {error && <h1 className='bg-red-100 w-full p-2 rounded text-blue-600 font-light mb-4'>
-          {error.message === 'duplicate_email' ? 'User with such email already exists' : 'An error occurred'}
+          {error.message === 'duplicate_email' ? 'User with such email already exists' :
+              error.message === 'duplicate_username' ? 'User with such username already exists' :
+                  'An error occurred'}
         </h1>}
         <Wizard onFinish={async ({ signupEmail, name, password, date }) => {
           try {
             await signup({ variables: { email: signupEmail, username: name, password, birthday: date.toString() } });
           } catch (e) {
+
+
             console.error('ERROR', JSON.stringify(e, null, 4));
-            return;
+            return false;
           }
 
           history.push('/');
 
           window.location.reload();
+
+          return true;
         }}>
           <GeneralInfo/>
           <Finish/>

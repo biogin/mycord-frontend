@@ -69,7 +69,7 @@ const WizardContextActions = React.createContext<IWizardContextActions>({
 interface Props {
   children: Array<any>;
 
-  onFinish?(wizardData: any): Promise<void> | void;
+  onFinish?(wizardData: any): Promise<boolean>;
 }
 
 const Wizard = ({ children, onFinish }: Props) => {
@@ -102,7 +102,9 @@ const Wizard = ({ children, onFinish }: Props) => {
 
   useEffect(() => {
     if (finished && onFinish) {
-      onFinish(wizardData);
+      if (!onFinish(wizardData)) {
+        setFinished(false);
+      }
     }
   }, [finished, currentStep, wizardData, onFinish]);
 

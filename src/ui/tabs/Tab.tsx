@@ -9,7 +9,7 @@ export interface TabProps {
 
 const Tab: FunctionComponent<TabProps> = ({ label, onClick, activeTab }) => {
   return (
-      <div onClick={() => onClick(label)} className={`p-2 flex-1 cursor-pointer text-center ${activeTab === label && 'border-b-2 border-secondary'}`}>
+      <div onClick={() => onClick(label)} className={`p-3 flex-1 cursor-pointer text-center border-b-2 hover:border-secondary ${activeTab === label ? 'border-secondary' : 'border-grey-200'}`}>
         {label}
       </div>
   );

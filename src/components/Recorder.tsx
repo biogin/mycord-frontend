@@ -14,7 +14,7 @@ function Recorder() {
       setMinutes(+(elapsedTime / 60).toFixed(0));
       reset(0);
     }
-  }, [elapsedTime]);
+  }, [elapsedTime, reset]);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 

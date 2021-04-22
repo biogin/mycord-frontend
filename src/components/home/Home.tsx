@@ -8,7 +8,7 @@ import { IPost } from "../../types/post";
 import Layout from "../../ui/Layout";
 import Button from "../../ui/Button";
 import { useUserProfileImage } from "../auth/AuthProvider";
-import Post from "./Post";
+import Post from "./components/Post";
 import Recorder from "../Recorder";
 
 const Home = () => {
@@ -34,15 +34,13 @@ const Home = () => {
 
   const image = useUserProfileImage();
 
-  const history = useHistory();
-
   return (
       <Layout>
         <div className="flex flex-col bg-white h-full">
-          <h1 className='font-bold text-2xl p-4'>
-            Home
-          </h1>
-          <div className='flex flex-row items-center p-8 border-t-2 border-b-2 border-grey-100'>
+          {/*<h1 className='font-bold text-2xl p-4'>*/}
+          {/*  Home*/}
+          {/*</h1>*/}
+          <div className='flex flex-row items-center p-8 border-t-2 border-b-2 border-grey-200'>
             <img className='self-start rounded-full w-1/12' src={image} alt="Profile"/>
             <div className="flex flex-col lg:flex-row justify-between w-full">
               <div className='flex flex-col self-center mx-4 w-full'>
