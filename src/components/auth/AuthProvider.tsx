@@ -1,21 +1,28 @@
 import React, { createContext, ReactNode, useContext } from 'react';
-import { ApolloError, useQuery } from "@apollo/client";
+import { ApolloError, useMutation, useQuery } from "@apollo/client";
 import { gql } from "@apollo/client/core";
+import { useHistory } from "react-router-dom";
 
 interface IAuthContext {
-  user: {
+  profile: {
     email: string;
     imageUrl: string;
     username: string
+    user: {
+      id: number;
+    }
   } | null;
   loggedIn: boolean;
   error: ApolloError | undefined;
+
+  signout: Function;
 }
 
 const AuthContext = createContext<IAuthContext>({
-  user: null,
+  profile: null,
   loggedIn: false,
-  error: undefined
+  error: undefined,
+  signout() {}
 });
 
 interface AuthProviderProps {
@@ -23,11 +30,24 @@ interface AuthProviderProps {
 }
 
 const AuthProvider = ({ children }: AuthProviderProps) => {
+  const history = useHistory();
+
     const { data, error, loading } = useQuery(gql`
         query LoggedInUser{
             loggedInUser{
                 username,
-                imageUrl
+                imageUrl,
+                user{
+                    id
+                }
+            }
+        }
+    `);
+
+    const [signoutMutation, { error: signoutError }] = useMutation(gql`
+        mutation SignoutMain{
+            signout{
+                email
             }
         }
     `);
@@ -40,10 +60,23 @@ const AuthProvider = ({ children }: AuthProviderProps) => {
     return null;
   }
 
+  if (signoutError) {
+    console.log('Error signing out', signoutError);
+  }
+
+  const signout = async () => {
+    await signoutMutation();
+
+    history.push('/');
+
+    window.location.reload(); // to update global state
+  }
+
   const value = {
-    user: data?.loggedInUser,
+    profile: data?.loggedInUser,
     loggedIn: !!data?.loggedInUser,
-    error
+    error: error || signoutError,
+    signout
   };
 
   return (
@@ -58,11 +91,19 @@ export function useLoggedIn(): boolean {
 }
 
 export function useUserProfileImage(): string | undefined {
-  return useContext(AuthContext).user?.imageUrl || '/profilePlaceholder.png';
+  return useContext(AuthContext).profile?.imageUrl || '/profilePlaceholder.png';
 }
 
 export function useUsername(): string | undefined {
-  return useContext(AuthContext).user?.username;
+  return useContext(AuthContext).profile?.username;
+}
+
+export function useUserId(): number | undefined {
+  return useContext(AuthContext).profile?.user?.id;
+}
+
+export function useSignout(): Function {
+  return useContext(AuthContext).signout;
 }
 
 export default AuthProvider;

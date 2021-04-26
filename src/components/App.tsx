@@ -51,7 +51,7 @@ function App() {
           <PublicRoute restricted={true} path='/login' exact component={Login}/>
           <PrivateRoute path='/' exact redirect={UnauthorizedHome} component={Home}/>
           <PrivateRoute path='/profile' exact component={Profile}/>
-          <PrivateRoute path='/conversations' exact>
+          <PrivateRoute path='/conversations/:username?' exact>
             <ConversationsProvider>
               <Conversations />
             </ConversationsProvider>

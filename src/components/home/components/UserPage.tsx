@@ -1,6 +1,6 @@
 import React, { useState, MouseEvent, useRef } from 'react';
 import { useHistory, useLocation, useParams, Link } from "react-router-dom";
-import { useMutation, useQuery } from "@apollo/client";
+import { useLazyQuery, useMutation, useQuery } from "@apollo/client";
 import { gql } from "@apollo/client/core";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 
@@ -10,11 +10,17 @@ import Tabs from "../../../ui/tabs/Tabs";
 import TabWrapper from "../../../ui/tabs/TabWrapper";
 
 import Post from "./Post";
-import { useLoggedIn } from "../../auth/AuthProvider";
+import { useLoggedIn, useUserId } from "../../auth/AuthProvider";
 import { IPost } from "../../../types/post";
 import { useSendMessage } from "../../conversations/ConversationsProvider";
 import { useClickOutside } from "../../../shared/hooks/useClickOutside";
 import { useForm } from "react-hook-form";
+
+const CONVERSATION_EXISTS_QUERY = gql`
+  query ConversationExists($userOne: ID!, $userTwo: ID!) {
+      conversationExists(userOne: $userOne, userTwo: $userTwo)
+  }
+`;
 
 const USER_QUERY = gql`
     query User($username: String!){
@@ -52,9 +58,11 @@ const UserPage = () => {
 
   const { username } = useParams<{ username: string }>();
 
-  const isLoggedIn = useLoggedIn();
+  const [isLoggedIn, userId] = [useLoggedIn(), useUserId()];
 
   const { data, loading, error, refetch } = useQuery(USER_QUERY, { variables: { username } });
+
+  const [conversationExists, { data: conversationExistsData, loading: conversationExistsLoading, error: conversationExistsError }] = useLazyQuery(CONVERSATION_EXISTS_QUERY);
 
   const [follow, { error: mutationError }] = useMutation(FOLLOW_MUTATION);
 
@@ -105,6 +113,47 @@ const UserPage = () => {
   }
 
   const user = data?.user?.user;
+
+  const posts = [
+    {
+      description: `
+          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ducimus eos inventore iure quidem saepe. Est facilis inventore libero nam quia reiciendis temporibus vero? A ducimus, illum odio unde vel voluptates.
+      `,
+      profileImageUrl: '',
+      title: 'Post',
+      audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+      createdAt: new Date()
+    },
+
+    {
+      description: `
+          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ducimus eos inventore iure quidem saepe. Est facilis inventore libero nam quia reiciendis temporibus vero? A ducimus, illum odio unde vel voluptates.
+      `,
+      profileImageUrl: '',
+      title: 'Post',
+      audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+      createdAt: new Date()
+    },
+    {
+      description: `
+          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ducimus eos inventore iure quidem saepe. Est facilis inventore libero nam quia reiciendis temporibus vero? A ducimus, illum odio unde vel voluptates.
+      `,
+      profileImageUrl: '',
+      title: 'Post',
+      audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+      createdAt: new Date()
+    },
+
+    {
+      description: `
+          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ducimus eos inventore iure quidem saepe. Est facilis inventore libero nam quia reiciendis temporibus vero? A ducimus, illum odio unde vel voluptates.
+      `,
+      profileImageUrl: '',
+      title: 'Post',
+      audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+      createdAt: new Date()
+    }
+  ];
   const me = data?.user?.me;
   const following = data?.user?.isFollowing;
 
@@ -113,7 +162,7 @@ const UserPage = () => {
   return (
       <Layout>
         <input type='file' id='file' onChange={handleFileSelect} ref={inputFile} style={{ display: 'none' }}/>
-        <div className='flex flex-col h-3/4'>
+        <div className='flex flex-col h-2/4'>
           <img
               src="https://www.solidbackgrounds.com/images/2880x1800/2880x1800-spanish-sky-blue-solid-color-background.jpg"
               className='max-w-full h-1/4'
@@ -165,7 +214,14 @@ const UserPage = () => {
                           <Button
                               className='mt-4'
                               fluid={false}
-                              click={() => {
+                              loading={true}
+                              click={async () => {
+                                // if () {
+
+                                  return router.push(`/conversations/${user?.profile?.username || ''}`);
+                                // }
+
+
                                 setShowSendMessage(true);
                               }}
                           >
@@ -255,7 +311,7 @@ const UserPage = () => {
                           <TabWrapper label='Audios'>
                             {loading && <h1>loading ...</h1>}
                             {!loading &&
-                            user?.posts?.map(({ audioUrl, description, title, createdAt }: IPost, key: number) => (
+                            (posts as any).map(({ audioUrl, description, title, createdAt }: IPost, key: number) => (
                                 <Post
                                     key={key}
                                     audioUrl={audioUrl}

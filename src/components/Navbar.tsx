@@ -3,7 +3,7 @@ import Input from "../ui/Input";
 import { Controller, useForm } from "react-hook-form";
 
 const Navbar = () => {
-  const { watch, control } = useForm();
+  const { control } = useForm();
 
   return (
       <div className='flex justify-between items-center border-b-2 border-grey-200 shadow-sm h-20' style={{ width: '100vw' }}>

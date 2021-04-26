@@ -8,7 +8,7 @@ import { useConversations } from "./ConversationsProvider";
 import { MESSAGES_SUBSCRIPTION } from "./components/Messages";
 
 export const CONVERSATION_QUERY = gql`
-    query Conversation($conversationId: ID) {
+    query Conversation($conversationId: ID!) {
         conversation(id: $conversationId) {
             messages{
                 authorProfile{
@@ -28,7 +28,12 @@ interface ConversationsProps {
 function Conversations(_props: ConversationsProps) {
   const { conversations, loading, error: { query: queryError } } = useConversations();
 
-  const [fetchConversation, { subscribeToMore, data, loading: loadingConversation, error }] = useLazyQuery(CONVERSATION_QUERY);
+  const [fetchConversation, {
+    subscribeToMore,
+    data,
+    loading: loadingConversation,
+    error
+  }] = useLazyQuery(CONVERSATION_QUERY);
 
   const containerRef = useRef<null | HTMLDivElement>(null);
 
@@ -36,7 +41,10 @@ function Conversations(_props: ConversationsProps) {
 
   const [{ messagesWidth, conversationWidth }, setContainerWidths] = useState<{ [containerName: string]: string }>({});
 
-  const [lastSentMessages, setLastSentMessages] = useState(new Map(conversations?.map(({ id, messages }) => [id, messages[0]])));
+  const [lastSentMessages, setLastSentMessages] = useState(new Map(conversations?.map(({
+                                                                                         id,
+                                                                                         messages
+                                                                                       }) => [id, messages[0]])));
 
   const resize = (e: any) => {
     const containerWidth = containerRef.current!.offsetWidth;
@@ -57,8 +65,8 @@ function Conversations(_props: ConversationsProps) {
       const containerWidth = containerRef.current!.offsetWidth;
       const conversationContainerWidth = (containerWidth / 2.5);
 
-      const conversationWidth =  conversationContainerWidth / containerWidth * 100;
-      const messagesWidth = (containerWidth - conversationContainerWidth ) / containerWidth * 100;
+      const conversationWidth = conversationContainerWidth / containerWidth * 100;
+      const messagesWidth = (containerWidth - conversationContainerWidth) / containerWidth * 100;
 
       setContainerWidths({
         messagesWidth: `${messagesWidth}%`,
@@ -73,7 +81,7 @@ function Conversations(_props: ConversationsProps) {
 
   return (
       <Layout mainContentWidth={ContentWidth.ThreeFourth}>
-        <div ref={containerRef} className="flex flex-col bg-white h-full relative">
+        <div ref={containerRef} className="flex flex-col bg-white h-screen relative">
           {loading ?
               <SkeletonTheme color="#f3f3f3" highlightColor="lightgrey">
                 <Skeleton height={100} count={6}/>

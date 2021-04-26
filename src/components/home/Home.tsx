@@ -1,17 +1,33 @@
 import React from 'react';
 import { useMutation, useQuery, gql } from "@apollo/client";
-import { useHistory, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 
 import { IPost } from "../../types/post";
 
 import Layout from "../../ui/Layout";
-import Button from "../../ui/Button";
 import { useUserProfileImage } from "../auth/AuthProvider";
 import Post from "./components/Post";
 import Recorder from "../Recorder";
+import { useForm } from "react-hook-form";
+
+import { sendPost as sendPostToApi } from './sendPost'
 
 const Home = () => {
+  const { register, watch } = useForm();
+
+  const message = watch('message', '');
+
+  const sendPost = async ({ chunks }: { chunks: Array<BlobPart> }) => {
+    if (!message) {
+      return
+    }
+
+    await sendPostToApi({ audioChunks: chunks, message });
+
+
+  }
+
     const [signout] = useMutation(gql`
         mutation Signout{
             signout{
@@ -36,29 +52,19 @@ const Home = () => {
 
   return (
       <Layout>
-        <div className="flex flex-col bg-white h-full">
-          {/*<h1 className='font-bold text-2xl p-4'>*/}
-          {/*  Home*/}
-          {/*</h1>*/}
-          <div className='flex flex-row items-center p-8 border-t-2 border-b-2 border-grey-200'>
-            <img className='self-start rounded-full w-1/12' src={image} alt="Profile"/>
-            <div className="flex flex-col lg:flex-row justify-between w-full">
-              <div className='flex flex-col self-center mx-4 w-full'>
-                <textarea
-                    placeholder={`Title`}
-                    maxLength={20}
-                    className='border-none placeholder-black-600 font-bold resize-none'>
+        <div className="flex flex-col bg-grey-100 h-screen">
+          <div
+              className="flex flex-col shadow-lg lg:flex-row justify-between items-center p-6 my-5 mx-8 rounded-xl bg-white">
+            <div className='flex items-center'>
+              <img className='self-start rounded-full w-1/6 m-auto md:w-14 md:ml-0' src={image} alt="Profile"/>
+              <textarea
+                  {...register('message')}
+                  placeholder={`Title`}
+                  maxLength={20}
+                  className='border-none placeholder-black-600 font-bold resize-none ml-4'>
                 </textarea>
-                <Recorder />
-              </div>
-              <div className='self-start w-full mt-4 lg:self-end lg:mt-0 lg:w-auto'>
-                <Button>
-                  Send
-                </Button>
-              </div>
             </div>
-          </div>
-          <div className='bg-grey-100 h-4'>
+            <Recorder onAudioSend={sendPost}/>
           </div>
           <div className='h-full mt-4'>
             {error && <p className='text-red-100'>An error occurred while fetching posts</p>}
@@ -81,9 +87,6 @@ const Home = () => {
                         createdAt={createdAt}
                     />)
                 ) : <Link to={'/discover'} className={'text-secondary font-medium text-center w-1/6 mx-auto flex'}>
-                  <Button>
-                    Discover
-                  </Button>
                 </Link>
             }
           </div>
