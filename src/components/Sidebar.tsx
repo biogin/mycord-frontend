@@ -79,7 +79,7 @@ const Sidebar = () => {
   }
 
   return (
-      <div className='flex flex-col sticky w-28 top-0 self-start' style={{ height: '90vh' }}>
+      <div className='flex flex-col overflow-y-scroll h-screen md:overflow-auto sticky w-28 top-0 self-start' style={{ height: '100vh' }}>
         <ul ref={container} className='flex flex-col h-full pt-2 w-full max-h-screen md:mt-4 space-y-2 relative'>
           {(loggedIn ? accountTabs : userTabs).map(({ name, getIcon, path }: any) => <SidebarTab
               image={getIcon(userProfileImage)}
@@ -87,14 +87,14 @@ const Sidebar = () => {
               active={path === location.pathname}
               key={name} name={name}/>)}
           <div ref={accountContainerRef} onClick={handleAccountClick}
-               className={`flex justify-center p-3 items-center fixed bottom-5 cursor-pointer`}>
+               className={`flex justify-center p-3 items-center relative md:fixed bottom-5 cursor-pointer`}>
             <img className='w-full md:w-2/3 xl:w-1/3 rounded-full' src="/icons/userIcon.svg" alt="Account"/>
             {showAccountMenu && <div ref={menuRef} className='flex flex-col rounded-md border-2 border-grey-200 justify-center w-40 py-5 px-3 absolute bottom-full left-1/2 bg-grey-100'>
                 <img className='border-b-2 w-1/2 mx-auto mb-5 rounded-full border-grey-200' src={userProfileImage} alt="Profile"/>
                 <button className='mb-2 text-white font-light border-2 border-grey-200 p-2 bg-secondary'>
                     Settings
                 </button>
-                <button onClick={() => signout()} className='border-2 text-white font-light border-grey-200 p-2 bg-secondary z-50'>
+                <button onClick={() => signout()} className='border-2 text-white font-light border-grey-200 p-2 bg-secondary z-5g'>
                     Logout
                 </button>
             </div>

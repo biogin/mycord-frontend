@@ -1,14 +1,28 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from "react-hook-form";
 
-import Messages from "./Messages";
+import Messages, { MESSAGES_SUBSCRIPTION } from "./Messages";
 import { Profile } from "../../../types/profile";
 import { ConversationStatus } from "../../../types/conversation-status";
 import { Message } from "../../../types/message";
 import { useSendMessage } from "../ConversationsProvider";
 import { useRefCallback } from "../../../shared/hooks/useRefCallback";
-import { ApolloError } from "@apollo/client";
-import { Conversation as IConversation } from "../../../types/conversation";
+import { gql, useQuery } from "@apollo/client";
+
+export const CONVERSATION_QUERY = gql`
+    query Conversation($conversationId: ID!) {
+        conversation(id: $conversationId) {
+            id,
+            messages{
+                authorProfile{
+                    imageUrl,
+                    username
+                },
+                text
+            }
+        }
+    }
+`;
 
 interface ConversationProps {
   id: number;
@@ -20,17 +34,7 @@ interface ConversationProps {
   status: ConversationStatus;
   lastMessage: Message;
 
-  subscribeToNewMessages(): undefined | (() => void);
-
-  fetchConversation: Function;
-
-  conversationData: {
-    loading: boolean;
-    error?: ApolloError;
-    data?: {
-      conversation?: IConversation;
-    };
-  }
+  setLastSentMessages(message: Message, id: number): void;
 
   containerWidths: {
     messages: string;
@@ -48,9 +52,7 @@ const Conversation = ({
                         status,
                         user,
                         lastMessage,
-                        subscribeToNewMessages,
-                        fetchConversation,
-                        conversationData: { loading, error, data }
+                        setLastSentMessages
                       }: ConversationProps) => {
   const [ref, refCallback] = useRefCallback();
 
@@ -60,32 +62,52 @@ const Conversation = ({
     }
   }
 
+  const { data, error, loading, subscribeToMore } = useQuery(CONVERSATION_QUERY, { variables: { conversationId: id } });
+
   useEffect(() => {
-    fetchConversation({ variables: { conversationId: id } });
+    const unsubscribe = subscribeToMore?.({
+      document: MESSAGES_SUBSCRIPTION,
+      variables: { subscriptionId: id },
+      updateQuery(prev, { subscriptionData }) {
+        if (!subscriptionData.data || subscriptionData.data.messageSent.currentConversationId !== id) return prev;
 
-  }, [fetchConversation, id]);
+        const newMessage = subscriptionData.data.messageSent;
 
-  useLayoutEffect(() => {
-    const unsubscribe = subscribeToNewMessages?.();
+        setLastSentMessages(newMessage, id);
+
+        setTimeout(() => {
+          updateScroll();
+        });
+
+        if (!active) {
+          
+        }
+
+        return {
+          ...prev,
+          conversation: {
+            id,
+            messages: [...prev.conversation.messages, newMessage]
+          }
+        }
+      },
+      onError(err) {
+        console.log(JSON.stringify(err, null, 4));
+      }
+    })
 
     return () => {
-      unsubscribe?.();
+      unsubscribe();
     };
-  });
+  }, []);
 
   const { sendMessage } = useSendMessage();
 
   const { register, handleSubmit, setValue } = useForm();
 
-  useEffect(() => {
-    if (ref.current) {
-      updateScroll();
-    }
-  }, [ref, lastMessage]);
-
   const onMessageSent = async ({ message }: any) => {
     try {
-      await sendMessage(user.id, message);
+      await sendMessage({ receiverId: user.id, text: message, currentConversationId: id });
     } catch (error) {
       console.log(JSON.stringify(error, null, 4));
     }
@@ -97,7 +119,7 @@ const Conversation = ({
       <div
           className={`flex flex-row`}>
         <div onClick={() => setActiveConversationId(id)}
-             className={`flex justify-between items-center bg-white rounded shadow-md hover:shadow-lg p-3 cursor-pointer w-full h-1/3 ${active && 'border-r-4 border-secondary'}`}
+             className={`flex justify-between items-center bg-white shadow-sm p-5 cursor-pointer w-full h-1/3 border-r-4 border-transparent ${active && 'border-r-4 border-secondary'}`}
              style={{ ...(conversation && { width: conversation }) }}
         >
           <div className='flex flex-col justify-center items-start w-1/12'>
@@ -121,7 +143,7 @@ const Conversation = ({
                   <Messages
                       error={error}
                       loading={loading}
-                      messages={data?.conversation?.messages}
+                      messages={data?.conversation.messages}
                   />
               </div>
               <form className='flex items-center justify-self-end m-2' onSubmit={handleSubmit(onMessageSent)}>

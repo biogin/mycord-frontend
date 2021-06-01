@@ -100,16 +100,17 @@ const Wizard = ({ children, onFinish }: Props) => {
 
   const [finished, setFinished] = useState(false);
 
+  const FIRST_STEP = 0;
+  const LAST_STEP = steps.length - 1;
+
   useEffect(() => {
-    if (finished && onFinish) {
+    if (finished && onFinish && currentStep && LAST_STEP === currentStep.position) {
       if (!onFinish(wizardData)) {
         setFinished(false);
       }
     }
   }, [finished, currentStep, wizardData, onFinish]);
 
-  const FIRST_STEP = 0;
-  const LAST_STEP = steps.length - 1;
 
   const setCurrentStepData = (data: any) => {
     if (!currentStep) {

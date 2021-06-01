@@ -1,4 +1,4 @@
-import React, { MouseEvent, useEffect, useRef, useState } from 'react';
+import React, { MouseEvent, useEffect, useState } from 'react';
 import { useElapsedTime } from 'use-elapsed-time';
 
 interface RecorderProps {
@@ -158,19 +158,19 @@ function Recorder({ onAudioSend }: RecorderProps) {
 
   return (
       <>
-        <div className={`flex items-center space-x-4 ${discard ? 'block' : 'hidden'}`}>
-          <div className='flex w-10 hidden lg:flex'>
-            {new Array(1).fill(0).map((_, i) => <img key={i} src="/waveform.png" alt="Waveform"/>)}
-          </div>
-          <img className='w-7 flex cursor-pointer' onClick={handleDiscard} src="/icons/binIcon.svg" alt="Bin"/>
-          <img className='w-7 flex cursor-pointer' onClick={handleSend} src="/icons/playIcon.svg" alt="Play"/>
+        <div className={`flex items-center space-x-2 ${discard ? 'block' : 'hidden'}`}>
+          {/*<div className='flex w-10 hidden lg:flex'>*/}
+          {/*  {new Array(1).fill(0).map((_, i) => <img key={i} src="/waveform.png" alt="Waveform"/>)}*/}
+          {/*</div>*/}
+          <img className='w-8 flex cursor-pointer' onClick={handleDiscard} src="/icons/binIcon.svg" alt="Bin"/>
+          <img className='w-8 flex cursor-pointer' onClick={handleSend} src="/icons/playIcon.svg" alt="Play"/>
           <p className='mr-3 xl:mr-0 font-light text-secondary'>
             {`${minutes ? `${minutes}` : '00'}:${elapsedTime.toFixed(0)}`}
           </p>
         </div>
-        <div className={`flex flex-col lg:flex-row p-2 ${recording ? 'w-full' : ''} ${discard ? 'hidden' : 'block'}`}>
+        <div className={`flex flex-col lg:flex-row ${recording ? 'w-full' : ''} ${discard ? 'hidden' : 'block'}`}>
           <div
-              className={`flex w-full h-8 items-center justify-center md:justify-end rounded-full bg-primary ${!recording && 'hidden'}`}>
+              className={`flex w-full h-8 items-center justify-center lg:justify-end rounded-full bg-primary ${!recording && 'hidden'}`}>
             <svg className='animate-pulse flex justify-center mr-3' height="12" width="12">
               <circle cx="6" cy="6" r="6" fill="red"/>
             </svg>
@@ -180,12 +180,12 @@ function Recorder({ onAudioSend }: RecorderProps) {
             <button className='w-8 ml-3' onClick={handleStop}>
               <img className='h-8' src="/icons/stopIcon.svg" alt="Stop"/>
             </button>
-            <button className='w-12 ml-2' onClick={handleSend}>
+            <button className='w-12 ml-3' onClick={handleSend}>
               <img className='h-8 transform -rotate-90' src="/icons/planeIcon.svg" alt="Stop"/>
             </button>
           </div>
           <div className={`flex ${recording ? 'hidden' : ''}`}>
-            <button className='w-7 outline-none' onClick={handleRecord}>
+            <button className='w-8 outline-none' onClick={handleRecord}>
               <img className='rounded-full' src="/icons/recordIcon.svg" alt="Stop"/>
             </button>
           </div>

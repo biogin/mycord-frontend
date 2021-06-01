@@ -2,13 +2,15 @@ import React from 'react';
 import Input from "../ui/Input";
 import { Controller, useForm } from "react-hook-form";
 
+import logo from '../static/img/logo.png';
+
 const Navbar = () => {
   const { control } = useForm();
 
   return (
       <div className='flex justify-between items-center border-b-2 border-grey-200 shadow-sm h-20' style={{ width: '100vw' }}>
         <div className='flex justify-between items-center w-1/2'>
-          <img className='-z-10 relative w-28' src="https://i.pinimg.com/originals/f9/6a/26/f96a261e5a60d7d66b36e2850e3eb19b.png"
+          <img className='-z-10 relative w-28' src={logo}
                alt="alt"/>
           <Controller
               name='email'

@@ -8,16 +8,21 @@ export const sendPost = async (post: PostInput) => {
 
   const file = new File([blob], 'audiofile');
 
-  fetch('http://localhost:1337/api/file/upload', {
-    method: 'POST',
-    headers: {
-      'Content-type': 'audio'
-    },
-    body: file
-  })
-      .then(res => res.json())
-      .then(d => {
-        console.log(d)
-      })
-      .catch(err => console.error(err));
+  const formData = new FormData();
+
+  formData.append('file', file);
+
+  // fetch('http://localhost:1337/api/file/upload', {
+  //   method: 'POST',
+  //   body: formData
+  // })
+  //     .then(res => res.json())
+  //     .then(d => {
+  //       console.log(d)
+  //     })
+  //     .catch(err => console.error(err));
+
+    const postData = {
+      message: post.message
+    };
 }

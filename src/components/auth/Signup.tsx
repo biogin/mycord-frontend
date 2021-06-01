@@ -247,14 +247,13 @@ const Signup = () => {
             await signup({ variables: { email: signupEmail, username: name, password, birthday: date.toString() } });
           } catch (e) {
 
-
             console.error('ERROR', JSON.stringify(e, null, 4));
             return false;
           }
 
-          history.push('/');
-
           window.location.reload();
+
+          history.push('/');
 
           return true;
         }}>

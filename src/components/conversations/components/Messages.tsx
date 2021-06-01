@@ -12,7 +12,8 @@ export const MESSAGES_SUBSCRIPTION = gql`
             authorProfile {
                 username,
                 imageUrl
-            }
+            },
+            currentConversationId
         }
     }
 

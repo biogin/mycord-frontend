@@ -22,8 +22,21 @@ const AuthContext = createContext<IAuthContext>({
   profile: null,
   loggedIn: false,
   error: undefined,
-  signout() {}
+  signout() {
+  }
 });
+
+export const LOGGED_IN_USER_QUERY = gql`
+    query LoggedInUser{
+        loggedInUser{
+            username,
+            imageUrl,
+            user{
+                id
+            }
+        }
+    }
+`;
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -32,17 +45,7 @@ interface AuthProviderProps {
 const AuthProvider = ({ children }: AuthProviderProps) => {
   const history = useHistory();
 
-    const { data, error, loading } = useQuery(gql`
-        query LoggedInUser{
-            loggedInUser{
-                username,
-                imageUrl,
-                user{
-                    id
-                }
-            }
-        }
-    `);
+  const { data, error, loading } = useQuery(LOGGED_IN_USER_QUERY);
 
     const [signoutMutation, { error: signoutError }] = useMutation(gql`
         mutation SignoutMain{

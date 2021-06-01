@@ -15,6 +15,7 @@ export function PrivateRoute({
                                ...rest
                              }: PrivateRouteProps) {
   const loggedIn = useLoggedIn();
+  console.log('LOGGED IN AAAAAAAAAAAAAAAAAAAAAAAAAA', loggedIn)
 
   return (
       <Route {...rest} render={props => (

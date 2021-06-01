@@ -36,9 +36,6 @@ function App() {
 
   const history = useHistory();
 
-  useEffect(() => {
-  }, []);
-
   return (
       <>
         <Switch location={background || location}>
@@ -51,7 +48,7 @@ function App() {
           <PublicRoute restricted={true} path='/login' exact component={Login}/>
           <PrivateRoute path='/' exact redirect={UnauthorizedHome} component={Home}/>
           <PrivateRoute path='/profile' exact component={Profile}/>
-          <PrivateRoute path='/conversations/:username?' exact>
+          <PrivateRoute path='/conversations/:id?' exact>
             <ConversationsProvider>
               <Conversations />
             </ConversationsProvider>

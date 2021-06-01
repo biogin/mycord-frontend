@@ -2,11 +2,18 @@ import React, { createContext, ReactNode, useContext } from "react";
 import { gql, useMutation, useQuery } from "@apollo/client";
 
 import { Conversation } from "../../types/conversation";
+import { ConversationStatus } from "../../types/conversation-status";
+
+type SendMessageArgs = { receiverId: number, text: string, currentConversationId?: number };
 
 interface IConversationsContext {
   conversations: Array<Conversation>
 
-  sendMessage(receiverId: number, text: string): Promise<void>;
+  updateConversations(): void;
+
+  setConversationStatus(id: number, status: ConversationStatus): Promise<void>,
+
+  sendMessage({ receiverId, currentConversationId, text }: SendMessageArgs): Promise<void>;
 
   loading: boolean;
   error: {
@@ -16,7 +23,11 @@ interface IConversationsContext {
 }
 
 const ConversationsContext = createContext<IConversationsContext>({
-  async sendMessage(receiverId: number, text: string) {
+  async sendMessage({ receiverId, text, currentConversationId }) {
+  },
+  async setConversationStatus(id: number, status: ConversationStatus) {
+  },
+  updateConversations() {
   },
   conversations: [],
   loading: true,
@@ -24,11 +35,19 @@ const ConversationsContext = createContext<IConversationsContext>({
 });
 
 const SEND_MESSAGE_MUTATION = gql`
-    mutation SendMessage($receiverId: ID!, $text: String!){
-        sendMessage(receiverId: $receiverId, text: $text){
+    mutation SendMessage($receiverId: ID!, $text: String!, $currentConversationId: ID){
+        sendMessage(receiverId: $receiverId, text: $text, currentConversationId: $currentConversationId){
             text
         }
     }
+`;
+
+const SET_CONVERSATION_STATUS_MUTATION = gql`
+  mutation SetConversationStatus($conversationID: ID!, $status: ConversationStatus){
+      setConversationStatus(id: $conversationID, status: $status){
+          id
+      }
+  }
 `;
 
 const CONVERSATIONS_QUERY = gql`
@@ -59,16 +78,26 @@ interface ConversationProviderProps {
 }
 
 function ConversationsProvider({ children }: ConversationProviderProps) {
-  const { data, error, loading } = useQuery(CONVERSATIONS_QUERY);
+  const { data, error, loading, refetch } = useQuery(CONVERSATIONS_QUERY);
 
   const [sendMessageMutation, { error: mutationError }] = useMutation(SEND_MESSAGE_MUTATION);
 
-  const sendMessage = async (receiverId: number, message: string) => {
-    await sendMessageMutation({ variables: { text: message, receiverId } });
+  const [setConversationStatusMutation, { error: setConversationStatusMutationError }] = useMutation(SET_CONVERSATION_STATUS_MUTATION);
+
+  const sendMessage = async ({ receiverId, currentConversationId, text }: SendMessageArgs) => {
+    await sendMessageMutation({ variables: { text, receiverId, currentConversationId } });
   };
+
+  const setConversationStatus = async (id: number, status: ConversationStatus) => {
+    await setConversationStatusMutation({ variables: { status, id }})
+  }
 
   const value = {
     sendMessage,
+    updateConversations() {
+      refetch()
+    },
+    setConversationStatus,
     conversations: data?.conversations,
     loading,
     error: {
@@ -91,6 +120,14 @@ export function useConversations(): Pick<IConversationsContext, 'conversations' 
     conversations,
     loading,
     error
+  };
+}
+
+export function useUpdateConversations(): Pick<IConversationsContext, 'updateConversations'> {
+  const ctx = useContext(ConversationsContext);
+
+  return {
+    updateConversations: ctx.updateConversations
   };
 }
 

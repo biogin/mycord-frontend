@@ -1,6 +1,6 @@
-import React, { useState, MouseEvent, useRef } from 'react';
+import React, { useState, MouseEvent, useRef, useEffect } from 'react';
 import { useHistory, useLocation, useParams, Link } from "react-router-dom";
-import { useLazyQuery, useMutation, useQuery } from "@apollo/client";
+import { useApolloClient, useMutation, useQuery } from "@apollo/client";
 import { gql } from "@apollo/client/core";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 
@@ -10,16 +10,19 @@ import Tabs from "../../../ui/tabs/Tabs";
 import TabWrapper from "../../../ui/tabs/TabWrapper";
 
 import Post from "./Post";
-import { useLoggedIn, useUserId } from "../../auth/AuthProvider";
+import { LOGGED_IN_USER_QUERY, useLoggedIn, useUserId } from "../../auth/AuthProvider";
 import { IPost } from "../../../types/post";
 import { useSendMessage } from "../../conversations/ConversationsProvider";
 import { useClickOutside } from "../../../shared/hooks/useClickOutside";
 import { useForm } from "react-hook-form";
+import { uploadFile } from "../../../shared/uploadFile";
 
 const CONVERSATION_EXISTS_QUERY = gql`
-  query ConversationExists($userOne: ID!, $userTwo: ID!) {
-      conversationExists(userOne: $userOne, userTwo: $userTwo)
-  }
+    query ConversationByUsersIds($userOne: ID!, $userTwo: ID!) {
+        conversationByUsersIds(userOne: $userOne, userTwo: $userTwo){
+            id
+        }
+    }
 `;
 
 const USER_QUERY = gql`
@@ -33,7 +36,6 @@ const USER_QUERY = gql`
                 },
                 posts{
                     title,
-                    description,
                     audioUrl,
                     createdAt
                 }
@@ -50,6 +52,12 @@ const FOLLOW_MUTATION = gql`
     }
 `;
 
+const EDIT_PROFILE_MUTATION = gql`
+    mutation EditProfile($imageUrl: String){
+        editProfile(imageUrl: $imageUrl)
+    }
+`;
+
 const UserPage = () => {
   const router = useHistory();
   const location = useLocation();
@@ -61,8 +69,6 @@ const UserPage = () => {
   const [isLoggedIn, userId] = [useLoggedIn(), useUserId()];
 
   const { data, loading, error, refetch } = useQuery(USER_QUERY, { variables: { username } });
-
-  const [conversationExists, { data: conversationExistsData, loading: conversationExistsLoading, error: conversationExistsError }] = useLazyQuery(CONVERSATION_EXISTS_QUERY);
 
   const [follow, { error: mutationError }] = useMutation(FOLLOW_MUTATION);
 
@@ -93,11 +99,32 @@ const UserPage = () => {
     inputFile.current!.click();
   };
 
-  const handleFileSelect = (e: any) => {
+  const [editProfile, { data: editProfileData, error: editProfileError }] = useMutation(EDIT_PROFILE_MUTATION);
+
+  const client = useApolloClient();
+
+  const handleFileSelect = async (e: any) => {
     const file = e.target.files[0];
 
-    // TODO
-    console.log(file);
+    const imageUrl = await uploadFile({ file });
+
+    await editProfile({ variables: { imageUrl } });
+
+    await refetch({ username });
+
+    const { loggedInUser } = client.readQuery({
+      query: LOGGED_IN_USER_QUERY
+    });
+
+    await client.writeQuery({
+      query: LOGGED_IN_USER_QUERY,
+      data: {
+        loggedInUser: {
+          ...loggedInUser,
+          imageUrl
+        }
+      }
+    });
   };
 
   if (error) {
@@ -113,6 +140,12 @@ const UserPage = () => {
   }
 
   const user = data?.user?.user;
+
+  // const {
+  //   data: conversationExistsData,
+  //   loading: conversationExistsLoading,
+  //   error: conversationExistsError
+  // } = useQuery(CONVERSATION_EXISTS_QUERY, { variables: { userOne: userId, userTwo: user?.id } });
 
   const posts = [
     {
@@ -157,7 +190,13 @@ const UserPage = () => {
   const me = data?.user?.me;
   const following = data?.user?.isFollowing;
 
-  const canEditPhoto = isLoggedIn && me && !user?.profile?.imageUrl;
+  const canEditPhoto = isLoggedIn && me;
+
+  useEffect(() => {
+    if (!me) {
+      setShowPhotoIcon(false);
+    }
+  }, [me]);
 
   return (
       <Layout>
@@ -177,8 +216,8 @@ const UserPage = () => {
                     </SkeletonTheme>
                     : <div
                         className={`relative transform -translate-y-2/4 w-1/2 ${canEditPhoto && 'cursor-pointer'}`}
-                        onClick={handlePhotoClick}
                         {...((canEditPhoto) && {
+                          onClick: handlePhotoClick,
                           onMouseEnter: handleMouseEnter,
                           onMouseLeave: handleMouseLeave,
                         })
@@ -188,7 +227,6 @@ const UserPage = () => {
                           className='w-full rounded-full border-4 border-white transition'
                           src={user?.profile?.imageUrl || '/profilePlaceholder.png'}
                           alt="User"
-                          style={{ filter: showPhotoIcon ? 'blur(2px)' : 'none' }}
                       />
                       {showPhotoIcon &&
                       <img className='absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2'
@@ -210,15 +248,15 @@ const UserPage = () => {
                           Edit profile
                         </Button> :
                         <>
-                        {sendMessageError && <p>Error sending message</p>}
+                          {sendMessageError && <p>Error sending message</p>}
                           <Button
                               className='mt-4'
                               fluid={false}
-                              loading={true}
+                              disabled={!user}
                               click={async () => {
                                 // if () {
 
-                                  return router.push(`/conversations/${user?.profile?.username || ''}`);
+                                // return router.push(`/conversations/${user?.profile?.username || ''}`);
                                 // }
 
 
@@ -238,7 +276,7 @@ const UserPage = () => {
                                 alt="Send message"
                                 onClick={async () => {
                                   if (!!message) {
-                                    await sendMessage(user.id, message);
+                                    await sendMessage({ receiverId: user.id, text: message });
 
                                     router.push('/conversations');
 
@@ -250,6 +288,7 @@ const UserPage = () => {
                           <Button
                               className='mt-4 ml-4'
                               fluid={false}
+                              disabled={!user}
                               click={async () => {
                                 try {
                                   await follow({ variables: { username } });
@@ -311,11 +350,10 @@ const UserPage = () => {
                           <TabWrapper label='Audios'>
                             {loading && <h1>loading ...</h1>}
                             {!loading &&
-                            (posts as any).map(({ audioUrl, description, title, createdAt }: IPost, key: number) => (
+                            (posts as any).map(({ audioUrl, title, createdAt }: IPost, key: number) => (
                                 <Post
                                     key={key}
                                     audioUrl={audioUrl}
-                                    description={description}
                                     createdAt={createdAt}
                                     profileImageUrl={user?.profile?.imageUrl}
                                     title={title}
